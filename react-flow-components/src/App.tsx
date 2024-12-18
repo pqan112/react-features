@@ -1,84 +1,147 @@
+import React, { useCallback, useRef } from "react";
 import {
-  addEdge,
-  applyNodeChanges,
-  Connection,
-  NodeChange,
   ReactFlow,
+  Controls,
+  Panel,
+  useStoreApi,
+  useReactFlow,
   ReactFlowProvider,
-  type Edge,
-  type Node,
+  ConnectionLineType,
+  type NodeOrigin,
+  type InternalNode,
+  type OnConnectEnd,
+  type OnConnectStart,
 } from "@xyflow/react";
+import { useShallow } from "zustand/shallow";
+
+import useStore, { type RFState } from "./store";
+
+// we need to import the React Flow styles to make it work
 import "@xyflow/react/dist/style.css";
-import { useCallback, useState } from "react";
-import CustomNode from "./components/custom-node";
+import MindMapNode from "./components/mind-map-node";
+import MindMapEdge from "./components/mind-map-edge";
 
-const initialNodes: Node[] = [
-  {
-    id: "1",
-    type: "customNode",
-    position: { x: 100, y: 100 },
-    data: { label: "Node 1" },
-  },
-  {
-    id: "2",
-    type: "customNode",
-    position: { x: -100, y: 200 },
-    data: { label: "Node 2" },
-  },
-];
+const selector = (state: RFState) => ({
+  nodes: state.nodes,
+  edges: state.edges,
+  onNodesChange: state.onNodesChange,
+  onEdgesChange: state.onEdgesChange,
+  addChildNode: state.addChildNode,
+});
 
-const App = () => {
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>([]);
+const nodeTypes = {
+  mindmap: MindMapNode,
+};
 
-  const onNodesChange = useCallback(
-    (changes: NodeChange<Node>[]) =>
-      setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
+const edgeTypes = {
+  mindmap: MindMapEdge,
+};
+
+const nodeOrigin: NodeOrigin = [0.5, 0.5];
+const connectionLineStyle = { stroke: "#F6AD55", strokeWidth: 3 };
+const defaultEdgeOptions = { style: connectionLineStyle, type: "mindmap" };
+
+function Flow() {
+  // whenever you use multiple values, you should use shallow for making sure that the component only re-renders when one of the values change
+  const { nodes, edges, onNodesChange, onEdgesChange, addChildNode } = useStore(
+    useShallow(selector)
   );
+  const connectingNodeId = useRef<string | null>(null);
+  const store = useStoreApi();
+  const { screenToFlowPosition } = useReactFlow();
 
-  const onConnect = useCallback(
-    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
-    []
-  );
+  const getChildNodePosition = (
+    event: MouseEvent | TouchEvent,
+    parentNode?: InternalNode
+  ) => {
+    const { domNode } = store.getState();
 
-  const updateNodeLabel = (id: string, value: string) => {
-    setNodes((prevNodes) =>
-      prevNodes.map((node) =>
-        node.id === id
-          ? { ...node, data: { ...node.data, label: value } }
-          : node
-      )
-    );
+    if (
+      !domNode ||
+      // we need to check if these properites exist, because when a node is not initialized yet,
+      // it doesn't have a positionAbsolute nor a width or height
+      !parentNode?.internals.positionAbsolute ||
+      !parentNode?.measured.width ||
+      !parentNode?.measured.height
+    ) {
+      return;
+    }
+
+    const isTouchEvent = "touches" in event;
+    const x = isTouchEvent ? event.touches[0].clientX : event.clientX;
+    const y = isTouchEvent ? event.touches[0].clientY : event.clientY;
+    // we need to remove the wrapper bounds, in order to get the correct mouse position
+    const panePosition = screenToFlowPosition({
+      x,
+      y,
+    });
+
+    // we are calculating with positionAbsolute here because child nodes are positioned relative to their parent
+    return {
+      x:
+        panePosition.x -
+        parentNode.internals.positionAbsolute.x +
+        parentNode.measured.width / 2,
+      y:
+        panePosition.y -
+        parentNode.internals.positionAbsolute.y +
+        parentNode.measured.height / 2,
+    };
   };
 
-  console.log("nodes", nodes);
+  const onConnectStart: OnConnectStart = useCallback((_, { nodeId }) => {
+    connectingNodeId.current = nodeId;
+  }, []);
 
-  // Register the custom node type
-  const nodeTypes = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    customNode: (props: any) => (
-      <CustomNode
-        {...props}
-        data={{ ...props.data, onChange: updateNodeLabel }}
-      />
-    ),
-  };
+  const onConnectEnd: OnConnectEnd = useCallback(
+    (event) => {
+      const { nodeLookup } = store.getState();
+      const targetIsPane = (event.target as Element).classList.contains(
+        "react-flow__pane"
+      );
+
+      if (targetIsPane && connectingNodeId.current) {
+        const parentNode = nodeLookup.get(connectingNodeId.current);
+        const childNodePosition = getChildNodePosition(event, parentNode);
+
+        if (parentNode && childNodePosition) {
+          addChildNode(parentNode, childNodePosition);
+        }
+      }
+    },
+    [getChildNodePosition]
+  );
 
   return (
+    <div style={{ height: "100vh" }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
+        nodeOrigin={nodeOrigin}
+        connectionLineStyle={connectionLineStyle}
+        defaultEdgeOptions={defaultEdgeOptions}
+        connectionLineType={ConnectionLineType.Straight}
+        fitView
+      >
+        <Controls showInteractive={false} />
+        <Panel position="top-left">React Flow Mind Map</Panel>
+      </ReactFlow>
+    </div>
+  );
+}
+
+function App() {
+  return (
     <ReactFlowProvider>
-      <div style={{ height: "100vh" }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onConnect={onConnect}
-          fitView
-        />
-      </div>
+      <Flow />
     </ReactFlowProvider>
   );
-};
+}
 
 export default App;
