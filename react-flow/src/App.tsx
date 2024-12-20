@@ -1,4 +1,5 @@
 import {
+  addEdge,
   applyEdgeChanges,
   applyNodeChanges,
   Background,
@@ -6,7 +7,9 @@ import {
   ReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+// import CustomNode from "./components/custom-node";
+import CounterNode from "./components/count-node";
 
 const initialEdges = [{ id: "1-2", source: "1", target: "2" }];
 
@@ -24,11 +27,20 @@ const initialNodes = [
     data: { label: "World" },
     position: { x: 100, y: 100 },
   },
+
+  {
+    id: "node-1",
+    type: "counterNode",
+    position: { x: 200, y: 200 },
+    data: { initialCount: 10 },
+  },
 ];
 
 function App() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
+
+  const nodeTypes = useMemo(() => ({ counterNode: CounterNode }), []);
 
   const onNodesChange = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,6 +55,10 @@ function App() {
 
   console.log(nodes, edges);
 
+  const onConnect = useCallback((params) => {
+    setEdges((eds) => addEdge(params, eds));
+  }, []);
+
   return (
     <div style={{ height: "100%" }}>
       <ReactFlow
@@ -50,6 +66,8 @@ function App() {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={nodeTypes}
         fitView
       >
         <Background />
