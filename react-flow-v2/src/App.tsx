@@ -1,20 +1,23 @@
-import { useCallback, useRef } from "react";
 import {
-  ReactFlow,
-  useNodesState,
-  useEdgesState,
   addEdge,
+  Background,
   type Connection,
   Controls,
-  Background,
-  useReactFlow,
+  Node,
+  ReactFlow,
   ReactFlowProvider,
+  useEdgesState,
+  useNodesState,
+  useReactFlow,
 } from "@xyflow/react";
+import { useCallback, useEffect, useRef } from "react";
 import { DnDProvider, useDnD } from "./providers/dnd-provider";
 
 import "@xyflow/react/dist/style.css";
 import "./App.css";
+import RightPanel from "./components/right-panel";
 import Sidebar from "./components/sidebar";
+import { useNodeStore } from "./stores/useNodeStore";
 const initialNodes = [
   { id: "1", data: { label: "Node nè" }, position: { x: 0, y: 0 } },
   { id: "2", data: { label: "Node 2" }, position: { x: 100, y: 200 } },
@@ -30,18 +33,33 @@ export function Flow() {
   const { screenToFlowPosition } = useReactFlow();
   const [type] = useDnD();
 
+  const { selectedNode, nodeLabel, setSelectedNode, setNodeLabel } =
+    useNodeStore();
+
+  useEffect(() => {
+    if (selectedNode) {
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === selectedNode.id
+            ? { ...node, data: { ...node.data, label: nodeLabel } }
+            : node
+        )
+      );
+    }
+  }, [nodeLabel, selectedNode, setNodes]);
+
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
   );
 
-  const onDragOver = useCallback((event) => {
+  const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
 
   const onDrop = useCallback(
-    (event) => {
+    (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
 
       // check if the dropped element is valid
@@ -70,7 +88,10 @@ export function Flow() {
 
   const getId = () => `dndnode_${idRef.current++}`;
 
-  console.log("nodes", nodes);
+  const handleNodeClick = (e: React.MouseEvent, node: Node) => {
+    setSelectedNode(node);
+    setNodeLabel(node.data.label as string);
+  };
 
   return (
     <div className="dndflow">
@@ -81,6 +102,7 @@ export function Flow() {
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodeClick={handleNodeClick}
           onConnect={onConnect}
           onDragOver={onDragOver}
           onDrop={onDrop}
@@ -90,6 +112,7 @@ export function Flow() {
           <Background />
         </ReactFlow>
       </div>
+      <RightPanel />
     </div>
   );
 }
