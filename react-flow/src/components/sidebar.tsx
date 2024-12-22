@@ -1,15 +1,15 @@
-import { useDnD } from "../providers/dnd-provider";
+import { useDnD } from "../providers/DnD-provider";
 
-const Sidebar = () => {
+export default () => {
   const [_, setType] = useDnD();
 
-  const onDragStart = (event, nodeType: string) => {
+  const onDragStart = (event, nodeType) => {
     setType(nodeType);
     event.dataTransfer.effectAllowed = "move";
   };
 
   return (
-    <aside>
+    <aside style={{ width: "300px", position: "fixed", top: 0, right: 0 }}>
       <div className="description">
         You can drag these nodes to the pane on the right.
       </div>
@@ -37,5 +37,3 @@ const Sidebar = () => {
     </aside>
   );
 };
-
-export default Sidebar;

@@ -12,6 +12,8 @@ export const DnDProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+export default DnDContext;
+
 export const useDnD = () => {
   return useContext(DnDContext);
 };
