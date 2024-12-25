@@ -1,40 +1,44 @@
 import {
   addEdge,
   Background,
-  type Connection,
   Controls,
-  Node,
   ReactFlow,
-  ReactFlowProvider,
   useEdgesState,
   useNodesState,
   useReactFlow,
+  type Connection,
+  type Edge,
+  type Node,
 } from "@xyflow/react";
-import { useCallback, useEffect, useRef } from "react";
-import { DnDProvider, useDnD } from "./providers/dnd-provider";
+import { useCallback, useContext, useEffect, useRef } from "react";
+import { DnDContext } from "../providers/dnd-provider";
+import { useNodeStore } from "../stores/flow-store";
+import Layout from "./layout";
+import { useSidebarStore } from "../stores/sidebar-store";
+import RightSidebar from "./right-sidebar";
 
-import "@xyflow/react/dist/style.css";
-import "./App.css";
-import RightPanel from "./components/right-panel";
-import Sidebar from "./components/sidebar";
-import { useNodeStore } from "./stores/useNodeStore";
 const initialNodes: Node[] = [
-  { id: "1", data: { label: "Node nè" }, position: { x: 0, y: 0 } },
-  { id: "2", data: { label: "Node 2" }, position: { x: 100, y: 200 } },
+  {
+    id: "1",
+    data: { label: "Input node" },
+    type: "input",
+    position: { x: 0, y: 0 },
+  },
 ];
 
-const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
+const initialEdges: Edge[] = [];
 
-export function Flow() {
-  const reactFlowWrapper = useRef(null);
+function Flow() {
   const idRef = useRef(0);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const { screenToFlowPosition } = useReactFlow();
-  const { type } = useDnD();
+  const { type } = useContext(DnDContext);
 
   const { selectedNode, nodeLabel, setSelectedNode, setNodeLabel } =
     useNodeStore();
+
+  const { setIsOpen } = useSidebarStore();
 
   useEffect(() => {
     if (selectedNode) {
@@ -85,40 +89,30 @@ export function Flow() {
   const getId = () => `dndnode_${idRef.current++}`;
 
   const handleNodeClick = (e: React.MouseEvent, node: Node) => {
+    setIsOpen();
     setSelectedNode(node);
     setNodeLabel(node.data.label as string);
   };
 
   return (
-    <div className="dndflow">
-      <Sidebar />
-      <div className="reactflow-wrapper" ref={reactFlowWrapper}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeClick={handleNodeClick}
-          onConnect={onConnect}
-          onDragOver={onDragOver}
-          onDrop={onDrop}
-          fitView
-        >
-          <Controls />
-          <Background />
-        </ReactFlow>
-      </div>
-      <RightPanel />
-    </div>
+    <Layout>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={handleNodeClick}
+        onConnect={onConnect}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+      >
+        <Controls />
+        <Background />
+      </ReactFlow>
+
+      <RightSidebar />
+    </Layout>
   );
 }
 
-export default function App() {
-  return (
-    <ReactFlowProvider>
-      <DnDProvider>
-        <Flow />
-      </DnDProvider>
-    </ReactFlowProvider>
-  );
-}
+export default Flow;

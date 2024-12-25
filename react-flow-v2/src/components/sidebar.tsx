@@ -1,7 +1,7 @@
 import { useDnD } from "../providers/dnd-provider";
 
 const Sidebar = () => {
-  const [_, setType] = useDnD();
+  const { setType } = useDnD();
 
   const onDragStart = (event, nodeType: string) => {
     setType(nodeType);
