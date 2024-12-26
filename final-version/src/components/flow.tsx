@@ -16,6 +16,7 @@ import { useNodeStore } from "../stores/flow-store";
 import Layout from "./layout";
 import { useSidebarStore } from "../stores/sidebar-store";
 import RightSidebar from "./right-sidebar";
+import CustomNode from "./custom-node";
 
 const initialNodes: Node[] = [
   {
@@ -24,9 +25,19 @@ const initialNodes: Node[] = [
     type: "input",
     position: { x: 0, y: 0 },
   },
+  {
+    id: "2",
+    data: { label: "Input node" },
+    type: "custom",
+    position: { x: 0, y: 0 },
+  },
 ];
 
 const initialEdges: Edge[] = [];
+
+const nodeTypes = {
+  'custom': CustomNode
+}
 
 function Flow() {
   const idRef = useRef(0);
@@ -35,7 +46,7 @@ function Flow() {
   const { screenToFlowPosition } = useReactFlow();
   const { type } = useContext(DnDContext);
 
-  const { selectedNode, nodeLabel, setSelectedNode, setNodeLabel } =
+  const { selectedNode, nodeLabel, setSelectedNode, setNodeLabel, nodeBgColor, setNodeBgColor } =
     useNodeStore();
 
   const { setIsOpen } = useSidebarStore();
@@ -45,12 +56,24 @@ function Flow() {
       setNodes((nds) =>
         nds.map((node) =>
           node.id === selectedNode.id
-            ? { ...node, data: { ...node.data, label: nodeLabel } }
+            ? { ...node, data: { ...node.data, label: nodeLabel, bgColor: nodeBgColor } }
             : node
         )
       );
     }
-  }, [nodeLabel, selectedNode, setNodes]);
+  }, [nodeLabel, nodeBgColor, selectedNode, setNodes]);
+
+  // useEffect(() => {
+  //   if (selectedNode) {
+  //     setNodes((nds) =>
+  //       nds.map((node) =>
+  //         node.id === selectedNode.id
+  //           ? { ...node, data: { ...node.data, label: nodeLabel } }
+  //           : node
+  //       )
+  //     );
+  //   }
+  // }, [nodeLabel, selectedNode, setNodes]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -92,6 +115,7 @@ function Flow() {
     setIsOpen();
     setSelectedNode(node);
     setNodeLabel(node.data.label as string);
+    setNodeBgColor(node.data.bgColor as string)
   };
 
   return (
@@ -99,6 +123,7 @@ function Flow() {
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={handleNodeClick}

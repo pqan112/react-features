@@ -4,7 +4,7 @@ import { useSidebarStore } from "../stores/sidebar-store";
 
 function RightSidebar() {
   const { isOpen, setIsOpen } = useSidebarStore();
-  const { nodeLabel, setNodeLabel } = useNodeStore();
+  const { nodeLabel, setNodeLabel, setNodeBgColor } = useNodeStore();
 
   const handleToggle = () => {
     setIsOpen();
@@ -14,6 +14,10 @@ function RightSidebar() {
     e.preventDefault();
     setNodeLabel(e.target.value);
   };
+
+  const handleChangeColor =(bgColor: string) => {
+    setNodeBgColor(bgColor)
+  }
 
   return (
     <div className="relative">
@@ -36,6 +40,13 @@ function RightSidebar() {
           onChange={handleChange}
           className="border border-gray-500 border-solid"
         />
+
+        <div className="flex items-center gap-2 mt-3">
+          <button className="bg-red-500 text-white min-w-[50px] h-[50px]" onClick={() => handleChangeColor('bg-red-500')}>red</button>
+          <button className="bg-blue-500 text-white min-w-[50px] h-[50px]"  onClick={() => handleChangeColor('bg-blue-500')}>blue</button>
+
+
+        </div>
       </div>
     </div>
   );

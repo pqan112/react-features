@@ -3,7 +3,7 @@ import { Handle, NodeProps, Position } from "@xyflow/react";
 
 function CustomNode({ data }: NodeProps) {
   return (
-    <BaseNode>
+    <BaseNode className={`${data.bgColor}`}>
       <>
         {data.label}
         <Handle type="target" position={Position.Top} />

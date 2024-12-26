@@ -18,6 +18,7 @@ function AppSidebar() {
     nodeType: string
   ) => {
     setType(nodeType);
+
     event.dataTransfer.effectAllowed = "move";
   };
 
