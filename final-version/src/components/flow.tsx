@@ -16,28 +16,32 @@ import { useNodeStore } from "../stores/flow-store";
 import Layout from "./layout";
 import { useSidebarStore } from "../stores/sidebar-store";
 import RightSidebar from "./right-sidebar";
-import CustomNode from "./custom-node";
+import CustomNode from "./nodes/custom-default";
+import CustomInput from "./nodes/custom-input";
+import CustomOutput from "./nodes/custom-output";
 
 const initialNodes: Node[] = [
   {
     id: "1",
     data: { label: "Input node" },
-    type: "input",
-    position: { x: 0, y: 0 },
+    type: "customInput",
+    position: { x: 50, y: 50 },
   },
   {
     id: "2",
-    data: { label: "Input node" },
-    type: "custom",
-    position: { x: 0, y: 0 },
+    data: { label: "Default node" },
+    type: "customDefault",
+    position: { x: 150, y: 150 },
   },
 ];
 
 const initialEdges: Edge[] = [];
 
 const nodeTypes = {
-  'custom': CustomNode
-}
+  customInput: CustomInput,
+  customDefault: CustomNode,
+  customOutput: CustomOutput,
+};
 
 function Flow() {
   const idRef = useRef(0);
@@ -46,8 +50,20 @@ function Flow() {
   const { screenToFlowPosition } = useReactFlow();
   const { type } = useContext(DnDContext);
 
-  const { selectedNode, nodeLabel, setSelectedNode, setNodeLabel, nodeBgColor, setNodeBgColor } =
-    useNodeStore();
+  const {
+    selectedNode,
+    label,
+    bgColor,
+    textColor,
+    fontSize,
+    handleColor,
+    setSelectedNode,
+    setLabel,
+    setBgColor,
+    setTextColor,
+    setFontSize,
+    setHandleColor,
+  } = useNodeStore();
 
   const { setIsOpen } = useSidebarStore();
 
@@ -56,24 +72,30 @@ function Flow() {
       setNodes((nds) =>
         nds.map((node) =>
           node.id === selectedNode.id
-            ? { ...node, data: { ...node.data, label: nodeLabel, bgColor: nodeBgColor } }
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  label: label,
+                  bgColor: bgColor,
+                  textColor: textColor,
+                  fontSize: fontSize,
+                  handleColor: handleColor,
+                },
+              }
             : node
         )
       );
     }
-  }, [nodeLabel, nodeBgColor, selectedNode, setNodes]);
-
-  // useEffect(() => {
-  //   if (selectedNode) {
-  //     setNodes((nds) =>
-  //       nds.map((node) =>
-  //         node.id === selectedNode.id
-  //           ? { ...node, data: { ...node.data, label: nodeLabel } }
-  //           : node
-  //       )
-  //     );
-  //   }
-  // }, [nodeLabel, selectedNode, setNodes]);
+  }, [
+    selectedNode,
+    label,
+    bgColor,
+    textColor,
+    fontSize,
+    handleColor,
+    setNodes,
+  ]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -101,7 +123,7 @@ function Flow() {
         id: getId(),
         type,
         position,
-        data: { label: `${type} node` },
+        data: { label: `node` },
       };
 
       setNodes((nds) => nds.concat(newNode));
@@ -114,8 +136,11 @@ function Flow() {
   const handleNodeClick = (e: React.MouseEvent, node: Node) => {
     setIsOpen();
     setSelectedNode(node);
-    setNodeLabel(node.data.label as string);
-    setNodeBgColor(node.data.bgColor as string)
+    setLabel(node.data.label as string);
+    setBgColor(node.data.bgColor as string);
+    setTextColor(node.data.textColor as string);
+    setFontSize(node.data.textColor as string);
+    setHandleColor(node.data.textColor as string);
   };
 
   return (

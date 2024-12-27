@@ -1,10 +1,22 @@
 import { cn } from "../lib/utils";
 import { useNodeStore } from "../stores/flow-store";
 import { useSidebarStore } from "../stores/sidebar-store";
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+} from "./ui/sidebar";
 
 function RightSidebar() {
   const { isOpen, setIsOpen } = useSidebarStore();
-  const { nodeLabel, setNodeLabel, setNodeBgColor } = useNodeStore();
+  const {
+    label,
+    setLabel,
+    setBgColor,
+    setTextColor,
+    setFontSize,
+    setHandleColor,
+  } = useNodeStore();
 
   const handleToggle = () => {
     setIsOpen();
@@ -12,12 +24,21 @@ function RightSidebar() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setNodeLabel(e.target.value);
+    setLabel(e.target.value);
   };
 
-  const handleChangeColor =(bgColor: string) => {
-    setNodeBgColor(bgColor)
-  }
+  const handleChangeColor = (bgColor: string, textColor: string) => {
+    setBgColor(bgColor);
+    setTextColor(textColor);
+  };
+
+  const handleChangeFontSize = (fontSize: string) => {
+    setFontSize(fontSize);
+  };
+
+  const handleHandleColor = (color: string) => {
+    setHandleColor(color);
+  };
 
   return (
     <div className="relative">
@@ -29,24 +50,88 @@ function RightSidebar() {
       />
       <div
         className={cn(
-          "border-r-black border fixed top-0 right-0 h-full w-[350px] bg-white z-[1001] translate-x-[350px] p-2",
+          "border-r-black border fixed top-0 right-0 h-full w-[350px] bg-white z-[1001] translate-x-[350px] p-2 transition-all duration-[0.3s] ease-[ease]",
           {
             "translate-x-0": isOpen,
           }
         )}
       >
-        <input
-          value={nodeLabel}
-          onChange={handleChange}
-          className="border border-gray-500 border-solid"
-        />
+        <SidebarGroup>
+          <SidebarGroupLabel className="uppercase">Label</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <input
+              value={label}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-500 border-solid rounded-md"
+            />
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-        <div className="flex items-center gap-2 mt-3">
-          <button className="bg-red-500 text-white min-w-[50px] h-[50px]" onClick={() => handleChangeColor('bg-red-500')}>red</button>
-          <button className="bg-blue-500 text-white min-w-[50px] h-[50px]"  onClick={() => handleChangeColor('bg-blue-500')}>blue</button>
+        <SidebarGroup>
+          <SidebarGroupLabel className="uppercase">
+            Background color
+          </SidebarGroupLabel>
+          <div className="flex flex-col gap-2">
+            <SidebarGroupContent className="space-x-1">
+              <button
+                className="bg-red-600 text-white min-w-[50px] h-[50px] rounded-md"
+                onClick={() => handleChangeColor("bg-red-600", "text-white")}
+              >
+                red
+              </button>
+              <button
+                className="bg-blue-600 text-white min-w-[50px] h-[50px] rounded-md"
+                onClick={() => handleChangeColor("bg-blue-600", "text-white")}
+              >
+                blue
+              </button>
+            </SidebarGroupContent>
+          </div>
+        </SidebarGroup>
 
+        <SidebarGroup>
+          <SidebarGroupLabel className="uppercase">Font size</SidebarGroupLabel>
+          <SidebarGroupContent className="space-x-1">
+            <button
+              className="w-8 h-8 border border-gray-800 rounded-md"
+              onClick={() => handleChangeFontSize("text-sm")}
+            >
+              sm
+            </button>
+            <button
+              className="w-8 h-8 border border-gray-800 rounded-md"
+              onClick={() => handleChangeFontSize("text-base")}
+            >
+              md
+            </button>
+            <button
+              className="w-8 h-8 border border-gray-800 rounded-md"
+              onClick={() => handleChangeFontSize("text-lg")}
+            >
+              lg
+            </button>
+            <button
+              className="w-8 h-8 border border-gray-800 rounded-md"
+              onClick={() => handleChangeFontSize("text-xl")}
+            >
+              xl
+            </button>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-        </div>
+        <SidebarGroup>
+          <SidebarGroupLabel className="uppercase">
+            Handle color
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="space-x-1">
+            <button
+              className="h-8 px-2 py-1 border border-gray-800 rounded-md min-w-8"
+              onClick={() => handleHandleColor("bg-black")}
+            >
+              black
+            </button>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </div>
     </div>
   );
