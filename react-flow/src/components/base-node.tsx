@@ -11,7 +11,7 @@ export const BaseNode = React.forwardRef<
       "rounded-md border bg-card p-5 text-card-foreground",
       className,
       selected ? "border-muted-foreground shadow-lg" : "",
-      "hover:ring-1"
+      "hover:shadow-md"
     )}
     tabIndex={0}
     {...props}

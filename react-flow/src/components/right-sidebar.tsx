@@ -2,6 +2,7 @@ import { cn } from "../lib/utils";
 import { useNodeStore } from "../stores/flow-store";
 import { useSidebarStore } from "../stores/sidebar-store";
 import {
+  Sidebar,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -16,10 +17,12 @@ function RightSidebar() {
     setTextColor,
     setFontSize,
     setHandleColor,
+    setSelectedNode,
   } = useNodeStore();
 
   const handleToggle = () => {
     setIsOpen();
+    setSelectedNode(null);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,15 +47,17 @@ function RightSidebar() {
     <div className="relative">
       <div
         className={cn({
-          "fixed top-0 left-0 right-0 bottom-0 bg-transparent z-[1000]": isOpen,
+          "fixed top-0 left-0 right-0 bottom-0 bg-[rgba(0,0,0,0.1)] z-[9998]":
+            isOpen,
         })}
         onClick={handleToggle}
       />
-      <div
+      <Sidebar
+        side="right"
         className={cn(
-          "border-r-black border fixed top-0 right-0 h-full w-[350px] bg-white z-[1001] translate-x-[350px] p-2 transition-all duration-[0.3s] ease-[ease]",
+          "border-r-black border !fixed !top-0 !right-0 h-full !w-[350px] z-[9999] !translate-x-[350px] transition-all duration-3000 ease-in !bg-white",
           {
-            "translate-x-0": isOpen,
+            "!translate-x-0": isOpen,
           }
         )}
       >
@@ -132,7 +137,7 @@ function RightSidebar() {
             </button>
           </SidebarGroupContent>
         </SidebarGroup>
-      </div>
+      </Sidebar>
     </div>
   );
 }

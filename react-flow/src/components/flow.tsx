@@ -13,12 +13,12 @@ import {
 import { useCallback, useContext, useEffect, useRef } from "react";
 import { DnDContext } from "../providers/dnd-provider";
 import { useNodeStore } from "../stores/flow-store";
-import Layout from "./layout";
 import { useSidebarStore } from "../stores/sidebar-store";
-import RightSidebar from "./right-sidebar";
+import Layout from "./layout";
 import CustomNode from "./nodes/custom-default";
 import CustomInput from "./nodes/custom-input";
 import CustomOutput from "./nodes/custom-output";
+import RightSidebar from "./right-sidebar";
 
 const initialNodes: Node[] = [
   {
@@ -81,6 +81,7 @@ function Flow() {
                   textColor: textColor,
                   fontSize: fontSize,
                   handleColor: handleColor,
+                  isSelected: true,
                 },
               }
             : node

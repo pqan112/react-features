@@ -1,19 +1,21 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, Dispatch, SetStateAction, useState } from "react";
 
-const DnDContext = createContext([null, (_) => {}]);
+interface ContextType {
+  type: string;
+  setType: Dispatch<SetStateAction<string>>;
+}
+
+export const DnDContext = createContext<ContextType>({
+  type: "default",
+  setType: () => {},
+});
 
 export const DnDProvider = ({ children }: { children: React.ReactNode }) => {
-  const [type, setType] = useState(null);
+  const [type, setType] = useState<string>("default");
 
   return (
-    <DnDContext.Provider value={[type, setType]}>
+    <DnDContext.Provider value={{ type, setType }}>
       {children}
     </DnDContext.Provider>
   );
-};
-
-export default DnDContext;
-
-export const useDnD = () => {
-  return useContext(DnDContext);
 };
