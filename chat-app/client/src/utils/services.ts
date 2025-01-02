@@ -22,5 +22,5 @@ export const postRequest = async (url: string, body: any) => {
     return { error: true, message };
   }
 
-  return data;
+  return { status: true, data };
 };
