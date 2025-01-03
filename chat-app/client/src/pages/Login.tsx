@@ -22,7 +22,7 @@ function Login() {
       `${baseUrl}/users/login`,
       JSON.stringify(values)
     );
-    if (res.status) {
+    if (!res.error) {
       toast.success("login successfully");
       localStorage.setItem("user", JSON.stringify(res.data));
       setUser(res.data);

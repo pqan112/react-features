@@ -24,7 +24,7 @@ function Register() {
       `${baseUrl}/users/register`,
       JSON.stringify(value)
     );
-    if (res.status) {
+    if (!res.error) {
       toast.success("register successfully");
       localStorage.setItem("user", JSON.stringify(res.data));
       setUser(res.data);

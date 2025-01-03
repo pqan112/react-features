@@ -22,5 +22,18 @@ export const postRequest = async (url: string, body: any) => {
     return { error: true, message };
   }
 
-  return { status: true, data };
+  return { error: false, data };
+};
+
+export const getRequest = async (url: string) => {
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!res.ok) {
+    let message = "An error occured...";
+
+    if (data?.message) {
+      message = data.message;
+    }
+    return { error: true, message };
+  }
 };
