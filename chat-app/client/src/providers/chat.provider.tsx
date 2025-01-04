@@ -2,11 +2,18 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./auth.provider";
 import { baseUrl, getRequest } from "../utils/services";
 
+export interface UserChat {
+  createdAt: string;
+  members: Array<string>;
+  updatedAt: string;
+  _id: string;
+}
+
 interface ChatContextProps {
-  userChats: string | null;
+  userChats: UserChat[] | null;
   isUserChatsLoading: boolean | null;
   userChatsError: string | null;
-  setUserChats: (chats: string) => void;
+  setUserChats: (chats: UserChat[]) => void;
   setIsUserChatsLoading: (isLoading: boolean) => void;
   setUserChatsError: (error: string) => void;
 }
@@ -16,7 +23,7 @@ const ChatContext = createContext<ChatContextProps | undefined>(undefined);
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [userChats, setUserChats] = useState<string | null>(null);
+  const [userChats, setUserChats] = useState<UserChat[] | null>(null);
   const [isUserChatsLoading, setIsUserChatsLoading] = useState(false);
   const [userChatsError, setUserChatsError] = useState<string | null>(null);
 
