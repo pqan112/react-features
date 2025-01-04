@@ -1,4 +1,4 @@
-import { messageModel } from "../models/messageModel";
+import { messageModel } from "../models/messageModel.js";
 
 const messageController = {
   // create message

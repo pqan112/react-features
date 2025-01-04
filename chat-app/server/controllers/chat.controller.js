@@ -9,6 +9,7 @@ const chatController = {
       const chat = await chatModel.findOne({
         members: { $all: [firstId, secondId] },
       });
+
       if (chat) return res.status(200).json(chat);
 
       const newChat = new chatModel({
@@ -27,8 +28,10 @@ const chatController = {
 
     try {
       const chats = await chatModel.find({ members: { $in: [userId] } });
+      console.log(chats);
       res.status(200).json(chats);
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
   },

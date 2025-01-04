@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "./auth.provider";
+import { baseUrl, getRequest } from "../utils/services";
 
 interface ChatContextProps {
   userChats: string | null;
@@ -11,12 +13,31 @@ interface ChatContextProps {
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [userChats, setUserChats] = useState<string | null>(null);
   const [isUserChatsLoading, setIsUserChatsLoading] = useState(false);
   const [userChatsError, setUserChatsError] = useState<string | null>(null);
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const getUserChats = async () => {
+      if (user?._id) {
+        setIsUserChatsLoading(true);
+        const res = await getRequest(`${baseUrl}/chats/${user._id}`);
+
+        setIsUserChatsLoading(false);
+        if (res?.error) {
+          return setUserChatsError(res.message as string);
+        }
+
+        setUserChats(res.data);
+      }
+    };
+    getUserChats();
+  }, [user]);
 
   return (
     <ChatContext.Provider

@@ -36,4 +36,6 @@ export const getRequest = async (url: string) => {
     }
     return { error: true, message };
   }
+
+  return { error: false, data };
 };
