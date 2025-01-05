@@ -10,7 +10,7 @@ function App() {
   const { user } = useAuth();
 
   return (
-    <>
+    <div className="px-2">
       <NavBar />
       <Routes>
         <Route path="/" element={user ? <Chat /> : <Login />} />
@@ -18,7 +18,7 @@ function App() {
         <Route path="/login" element={user ? <Chat /> : <Login />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </>
+    </div>
   );
 }
 

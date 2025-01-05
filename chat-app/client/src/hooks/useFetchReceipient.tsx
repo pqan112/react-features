@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { UserChat } from "../providers/chat.provider";
 import { baseUrl, getRequest } from "../utils/services";
+import { User } from "../models/auth.model";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function useFetchReceipient(chat: UserChat, user: any) {
-  const [recipientUser, setRecipientUser] = useState<UserChat | null>(null);
+  const [recipientUser, setRecipientUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const recipientId = chat.members.find((mem) => mem !== user._id);

@@ -28,7 +28,6 @@ const chatController = {
 
     try {
       const chats = await chatModel.find({ members: { $in: [userId] } });
-      console.log(chats);
       res.status(200).json(chats);
     } catch (error) {
       console.log(error);
