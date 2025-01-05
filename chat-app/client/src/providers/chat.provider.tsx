@@ -89,8 +89,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   const createChat = useCallback(
     async (firstId: string, secondId: string) => {
       const res = await postRequest(
-        `${baseUrl}/chats/${user?._id}`,
-        JSON.stringify([firstId, secondId])
+        `${baseUrl}/chats`,
+        JSON.stringify({ firstId, secondId })
       );
       if (res.error) {
         return console.log(res.message);
