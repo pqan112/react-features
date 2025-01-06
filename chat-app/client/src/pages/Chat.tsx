@@ -1,3 +1,4 @@
+import ChatBox from "../components/chat/ChatBox";
 import PotentialChats from "../components/chat/PotentialChats";
 import UserChat from "../components/chat/UserChat";
 import { useChat } from "../providers/chat.provider";
@@ -16,7 +17,9 @@ function Chat() {
               <UserChat key={chat._id} chat={chat} />
             ))}
           </div>
-          <div className="flex-grow">ChatBox</div>
+          <div className="flex-grow">
+            <ChatBox />
+          </div>
         </div>
       )}
     </div>

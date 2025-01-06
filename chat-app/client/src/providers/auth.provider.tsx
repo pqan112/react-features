@@ -1,14 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-}
+import { UserType } from "../models/auth.model";
 
 interface AuthContextProps {
-  user: User | null;
-  setUser: (user: User | null) => void;
+  user: UserType | null;
+  setUser: (user: UserType | null) => void;
   logout: () => void;
 }
 
@@ -17,7 +12,7 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserType | null>(null);
 
   useEffect(() => {
     const user = localStorage.getItem("user") || "";

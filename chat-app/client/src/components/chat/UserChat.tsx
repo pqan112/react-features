@@ -1,14 +1,21 @@
 import React from "react";
 import { useAuth } from "../../providers/auth.provider";
 import useFetchReceipient from "../../hooks/useFetchReceipient";
-import { UserChat as UserChatType } from "../../providers/chat.provider";
+import {
+  useChat,
+  UserChat as UserChatType,
+} from "../../providers/chat.provider";
 
 function UserChat({ chat }: { chat: UserChatType }) {
   const { user } = useAuth();
+  const { updateCurrentChat } = useChat();
   const { recipientUser } = useFetchReceipient(chat, user);
 
   return (
-    <div className="flex items-center justify-between p-3">
+    <div
+      className="flex items-center justify-between p-3 cursor-pointer"
+      onClick={() => updateCurrentChat(chat)}
+    >
       <div className="flex items-center">
         <img
           src="https://picsum.photos/200"

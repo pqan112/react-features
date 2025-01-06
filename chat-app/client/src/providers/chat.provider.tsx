@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, {
   createContext,
   useCallback,
@@ -7,7 +8,7 @@ import React, {
 } from "react";
 import { useAuth } from "./auth.provider";
 import { baseUrl, getRequest, postRequest } from "../utils/services";
-import { User } from "../models/auth.model";
+import { UserType } from "../models/auth.model";
 
 export interface UserChat {
   createdAt: string;
@@ -16,16 +17,34 @@ export interface UserChat {
   _id: string;
 }
 
+export type User = Omit<UserType, "token">;
+
+export interface Message {
+  chatId: string;
+  createdAt: string;
+  senderId: string;
+  text: string;
+  updatedAt: string;
+}
+
 interface ChatContextProps {
   userChats: UserChat[];
-  isUserChatsLoading: boolean | null;
+  isUserChatsLoading: boolean;
   userChatsError: string | null;
-  potentialChats: User[];
+  potentialChats: UserType[];
+  currentChat: UserChat | null;
+  messagesError: string | null;
+  isMessagesLoading: boolean;
+  messages: Message[];
   setUserChats: (chats: UserChat[]) => void;
   setIsUserChatsLoading: (isLoading: boolean) => void;
   setUserChatsError: (error: string) => void;
-  setPotentialChats: (users: User[]) => void;
+  setPotentialChats: (users: UserType[]) => void;
   createChat: (firstId: string, secondId: string) => void;
+  updateCurrentChat: (chat: UserChat) => void;
+  setMessagesError: (error: string) => void;
+  setIsMessagesLoading: (isLoading: boolean) => void;
+  setMessages: (messages: Message[]) => void;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -37,12 +56,16 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isUserChatsLoading, setIsUserChatsLoading] = useState(false);
   const [userChatsError, setUserChatsError] = useState<string | null>(null);
   // potentialChats are social network friends
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const [potentialChats, setPotentialChats] = useState<any>([]);
+  const [currentChat, setCurrentChat] = useState<UserChat | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isMessagesLoading, setIsMessagesLoading] = useState(false);
+  const [messagesError, setMessagesError] = useState<string | null>(null);
 
   const { user } = useAuth();
 
-  console.log("user", user);
+  console.log("messages", messages);
 
   useEffect(() => {
     const getUsers = async () => {
@@ -86,20 +109,39 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     getUserChats();
   }, [user]);
 
-  const createChat = useCallback(
-    async (firstId: string, secondId: string) => {
-      const res = await postRequest(
-        `${baseUrl}/chats`,
-        JSON.stringify({ firstId, secondId })
-      );
+  useEffect(() => {
+    const getMessages = async () => {
+      setIsMessagesLoading(true);
+      const res = await getRequest(`${baseUrl}/messages/${currentChat?._id}`);
+
+      setIsMessagesLoading(false);
+
       if (res.error) {
-        return console.log(res.message);
+        return setMessagesError(res.message as string);
       }
 
-      setUserChats((prev) => [...prev, res.data]);
-    },
-    [user]
-  );
+      setMessages(res.data);
+    };
+
+    getMessages();
+  }, [currentChat]);
+
+  const updateCurrentChat = useCallback((chat: any) => {
+    console.log(chat);
+    setCurrentChat(chat);
+  }, []);
+
+  const createChat = useCallback(async (firstId: string, secondId: string) => {
+    const res = await postRequest(
+      `${baseUrl}/chats`,
+      JSON.stringify({ firstId, secondId })
+    );
+    if (res.error) {
+      return console.log(res.message);
+    }
+
+    setUserChats((prev) => [...prev, res.data]);
+  }, []);
 
   return (
     <ChatContext.Provider
@@ -108,11 +150,19 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         isUserChatsLoading,
         userChatsError,
         potentialChats,
+        currentChat,
+        isMessagesLoading,
+        messagesError,
+        messages,
+        updateCurrentChat,
         setUserChats,
         setIsUserChatsLoading,
         setUserChatsError,
         setPotentialChats,
         createChat,
+        setIsMessagesLoading,
+        setMessagesError,
+        setMessages,
       }}
     >
       {children}

@@ -4,7 +4,7 @@ export type RegisterInfo = {
   password: string;
 };
 
-export type User = {
+export type UserType = {
   _id: string;
   name: string;
   email: string;
