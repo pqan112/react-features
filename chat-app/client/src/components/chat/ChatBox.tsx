@@ -3,10 +3,12 @@ import useFetchReceipient from "../../hooks/useFetchReceipient";
 import { useAuth } from "../../providers/auth.provider";
 import { useChat, UserChat } from "../../providers/chat.provider";
 import InputEmoji from "react-input-emoji";
+import { UserType } from "../../models/auth.model";
 
 function ChatBox() {
   const { user } = useAuth();
-  const { currentChat, messages, isMessagesLoading } = useChat();
+  const { currentChat, messages, isMessagesLoading, sendTextMessage } =
+    useChat();
   const { recipientUser } = useFetchReceipient(currentChat as UserChat, user);
   const [textMessage, setTextMessage] = useState("");
 
@@ -17,12 +19,10 @@ function ChatBox() {
     return <p>Loading chat...</p>;
   }
 
-  console.log("recipientUser", recipientUser);
-
   return (
     <div>
       <div className="text-center">{recipientUser.name}</div>
-      <div className="h-96">
+      <div className="space-y-2 h-[calc(100vh_-_42px_-_24px_-_24px_-_52px)]">
         {messages &&
           messages.map((message) => (
             <div
@@ -31,7 +31,7 @@ function ChatBox() {
                   ? "flex justify-end"
                   : "flex justify-start"
               }`}
-              key={message.chatId}
+              key={message.createdAt}
             >
               <div
                 className={`p-2 text-white rounded-md max-w-[50%] ${
@@ -55,7 +55,18 @@ function ChatBox() {
           shouldConvertEmojiToImage={false}
           shouldReturn
         />
-        <button>📤</button>
+        <button
+          onClick={() =>
+            sendTextMessage(
+              textMessage,
+              user as UserType,
+              currentChat?._id as string,
+              setTextMessage
+            )
+          }
+        >
+          📤
+        </button>
       </div>
     </div>
   );

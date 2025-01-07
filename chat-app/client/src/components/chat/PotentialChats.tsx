@@ -3,7 +3,7 @@ import { useChat } from "../../providers/chat.provider";
 
 function PotentialChats() {
   const { user } = useAuth();
-  const { potentialChats, createChat } = useChat();
+  const { potentialChats, createChat, onlineUsers } = useChat();
 
   return (
     <div className="flex gap-2">
@@ -15,7 +15,13 @@ function PotentialChats() {
             onClick={() => createChat(user?._id as string, u._id)}
           >
             {u.name}
-            <span className="absolute w-2 h-2 bg-green-600 rounded-full -top-1 -right-1"></span>
+            <span
+              className={
+                onlineUsers?.some((ou) => ou.userId === u?._id)
+                  ? "absolute w-2 h-2 bg-green-600 rounded-full -top-1 -right-1"
+                  : ""
+              }
+            ></span>
           </div>
         ))}
     </div>

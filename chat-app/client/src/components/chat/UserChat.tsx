@@ -8,8 +8,10 @@ import {
 
 function UserChat({ chat }: { chat: UserChatType }) {
   const { user } = useAuth();
-  const { updateCurrentChat } = useChat();
+  const { updateCurrentChat, onlineUsers } = useChat();
   const { recipientUser } = useFetchReceipient(chat, user);
+
+  const isOnline = onlineUsers.some((ou) => ou.userId === recipientUser?._id);
 
   return (
     <div
@@ -33,7 +35,13 @@ function UserChat({ chat }: { chat: UserChatType }) {
         <div className="h-5 text-sm text-center text-white bg-blue-600 rounded-full min-w-5">
           2
         </div>
-        <span className="absolute w-2 h-2 bg-green-700 rounded-full -right-2 -top-2"></span>
+        <span
+          className={
+            isOnline
+              ? "absolute w-2 h-2 bg-green-700 rounded-full -right-2 -top-2"
+              : ""
+          }
+        ></span>
       </div>
     </div>
   );

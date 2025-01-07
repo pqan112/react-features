@@ -10,7 +10,7 @@ function Chat() {
       <PotentialChats />
       {!userChats?.length ? null : (
         <div className="flex justify-between gap-4">
-          <div className="h-[calc(100vh_-_24px)] w-72 p-2">
+          <div className="h-[calc(100vh_-_42px_-_24px)] w-72 p-2">
             {isUserChatsLoading && <p>Loading chats...</p>}
 
             {userChats?.map((chat) => (

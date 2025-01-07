@@ -9,6 +9,7 @@ import React, {
 import { useAuth } from "./auth.provider";
 import { baseUrl, getRequest, postRequest } from "../utils/services";
 import { UserType } from "../models/auth.model";
+import { io } from "socket.io-client";
 
 export interface UserChat {
   createdAt: string;
@@ -36,6 +37,9 @@ interface ChatContextProps {
   messagesError: string | null;
   isMessagesLoading: boolean;
   messages: Message[];
+  sendTextMessageError: string | null;
+  newMessage: Message | null;
+  onlineUsers: any[];
   setUserChats: (chats: UserChat[]) => void;
   setIsUserChatsLoading: (isLoading: boolean) => void;
   setUserChatsError: (error: string) => void;
@@ -45,6 +49,14 @@ interface ChatContextProps {
   setMessagesError: (error: string) => void;
   setIsMessagesLoading: (isLoading: boolean) => void;
   setMessages: (messages: Message[]) => void;
+  sendTextMessage: (
+    textMessage: string,
+    sender: UserType,
+    currentChatId: string,
+    setTextMessage: (text: string) => void
+  ) => void;
+  setSendTextMessageError: (text: string) => void;
+  setNewMessage: (message: Message) => void;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -56,16 +68,41 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isUserChatsLoading, setIsUserChatsLoading] = useState(false);
   const [userChatsError, setUserChatsError] = useState<string | null>(null);
   // potentialChats are social network friends
-
   const [potentialChats, setPotentialChats] = useState<any>([]);
   const [currentChat, setCurrentChat] = useState<UserChat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [messagesError, setMessagesError] = useState<string | null>(null);
-
+  const [sendTextMessageError, setSendTextMessageError] = useState<
+    string | null
+  >(null);
+  const [newMessage, setNewMessage] = useState<Message | null>(null);
+  const [socket, setSocket] = useState<any>(null);
+  const [onlineUsers, setOnlineUsers] = useState<any>([]);
   const { user } = useAuth();
 
-  console.log("messages", messages);
+  console.log("onlineUsers", onlineUsers);
+
+  useEffect(() => {
+    const newSocket = io("http://localhost:3000");
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (socket === null) return;
+    socket.emit("addNewUser", user?._id);
+    socket.on("getOnlineUsers", (res: any) => {
+      setOnlineUsers(res);
+    });
+
+    return () => {
+      socket.off("getOnlineUsers");
+    };
+  }, [socket, user?._id]);
 
   useEffect(() => {
     const getUsers = async () => {
@@ -127,7 +164,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [currentChat]);
 
   const updateCurrentChat = useCallback((chat: any) => {
-    console.log(chat);
     setCurrentChat(chat);
   }, []);
 
@@ -143,6 +179,34 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     setUserChats((prev) => [...prev, res.data]);
   }, []);
 
+  const sendTextMessage = useCallback(
+    async (
+      textMessage: string,
+      sender: UserType,
+      currentChatId: string,
+      setTextMessage: (text: string) => void
+    ) => {
+      if (!textMessage) return console.log("you must type something");
+
+      const res = await postRequest(
+        `${baseUrl}/messages`,
+        JSON.stringify({
+          chatId: currentChatId,
+          senderId: sender._id,
+          text: textMessage,
+        })
+      );
+
+      if (res.error) {
+        return setSendTextMessageError(res.message as string);
+      }
+      setNewMessage(res.data);
+      setMessages((prev) => [...prev, res.data]);
+      setTextMessage("");
+    },
+    []
+  );
+
   return (
     <ChatContext.Provider
       value={{
@@ -154,6 +218,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         isMessagesLoading,
         messagesError,
         messages,
+        sendTextMessageError,
+        newMessage,
+        onlineUsers,
         updateCurrentChat,
         setUserChats,
         setIsUserChatsLoading,
@@ -163,6 +230,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsMessagesLoading,
         setMessagesError,
         setMessages,
+        sendTextMessage,
+        setSendTextMessageError,
+        setNewMessage,
       }}
     >
       {children}
