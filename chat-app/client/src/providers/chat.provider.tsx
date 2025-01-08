@@ -18,6 +18,12 @@ export interface UserChat {
   _id: string;
 }
 
+export interface Notification {
+  senderId: string;
+  isRead: boolean;
+  date: string;
+}
+
 export type User = Omit<UserType, "token">;
 
 export interface Message {
@@ -40,6 +46,8 @@ interface ChatContextProps {
   sendTextMessageError: string | null;
   newMessage: Message | null;
   onlineUsers: any[];
+  notifications: Array<Notification>;
+  allUsers: User[];
   setUserChats: (chats: UserChat[]) => void;
   setIsUserChatsLoading: (isLoading: boolean) => void;
   setUserChatsError: (error: string) => void;
@@ -57,6 +65,9 @@ interface ChatContextProps {
   ) => void;
   setSendTextMessageError: (text: string) => void;
   setNewMessage: (message: Message) => void;
+  setNotifications: (notification: Array<Notification>) => void;
+  setAllUsers: (users: User[]) => void;
+  markAllNotificationsAsRead: (notifications: Notification[]) => void;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -79,9 +90,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   const [newMessage, setNewMessage] = useState<Message | null>(null);
   const [socket, setSocket] = useState<any>(null);
   const [onlineUsers, setOnlineUsers] = useState<any>([]);
+  const [notifications, setNotifications] = useState<Array<Notification>>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const { user } = useAuth();
-
-  console.log("onlineUsers", onlineUsers);
 
   useEffect(() => {
     const newSocket = io("http://localhost:3000");
@@ -101,7 +112,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
 
     return () => {
       socket.off("getOnlineUsers");
-      socket.off("getMessage");
     };
   }, [socket, user?._id]);
 
@@ -112,16 +122,28 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     socket.emit("sendMessage", { ...newMessage, recipientId });
   }, [newMessage]);
 
-  // receive message
+  // receive message and notification
   useEffect(() => {
     if (socket === null) return;
 
     socket.on("getMessage", (res: any) => {
-      console.log(res);
       if (currentChat?._id !== res.chatId) return;
       setMessages((prev) => [...prev, res]);
     });
-  }, [newMessage]);
+    socket.on("getNotification", (res: any) => {
+      const isChatOpen = currentChat?.members.some((id) => id === res.senderId);
+      if (isChatOpen) {
+        setNotifications((prev) => [{ ...res, isRead: true }, ...prev]);
+      } else {
+        setNotifications((prev) => [res, ...prev]);
+      }
+    });
+
+    return () => {
+      socket.off("getMessage");
+      socket.off("getNotification");
+    };
+  }, [newMessage, socket, currentChat]);
 
   // todo
 
@@ -145,6 +167,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       setPotentialChats(pChats);
+      setAllUsers(res.data);
     };
 
     getUsers();
@@ -228,9 +251,21 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     []
   );
 
+  const markAllNotificationsAsRead = useCallback(
+    (notifications: Notification[]) => {
+      const mNotifications = notifications.map((n) => {
+        return { ...n, isRead: true };
+      });
+
+      setNotifications(mNotifications);
+    },
+    []
+  );
+
   return (
     <ChatContext.Provider
       value={{
+        allUsers,
         userChats,
         isUserChatsLoading,
         userChatsError,
@@ -242,6 +277,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         sendTextMessageError,
         newMessage,
         onlineUsers,
+        notifications,
         updateCurrentChat,
         setUserChats,
         setIsUserChatsLoading,
@@ -254,6 +290,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         sendTextMessage,
         setSendTextMessageError,
         setNewMessage,
+        setNotifications,
+        setAllUsers,
+        markAllNotificationsAsRead,
       }}
     >
       {children}

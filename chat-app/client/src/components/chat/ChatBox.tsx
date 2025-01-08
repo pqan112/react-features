@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useFetchReceipient from "../../hooks/useFetchReceipient";
 import { useAuth } from "../../providers/auth.provider";
 import { useChat, UserChat } from "../../providers/chat.provider";
@@ -11,6 +11,12 @@ function ChatBox() {
     useChat();
   const { recipientUser } = useFetchReceipient(currentChat as UserChat, user);
   const [textMessage, setTextMessage] = useState("");
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (scrollRef.current as any)?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   if (!recipientUser) {
     return <p>No conversation</p>;
@@ -22,7 +28,7 @@ function ChatBox() {
   return (
     <div>
       <div className="text-center">{recipientUser.name}</div>
-      <div className="space-y-2 h-[calc(100vh_-_42px_-_24px_-_24px_-_52px)] overflow-y-auto">
+      <div className="space-y-2 h-[calc(100vh_-_42px_-_24px_-_24px_-_52px)] overflow-y-auto scroll-smooth">
         {messages &&
           messages.map((message, index) => (
             <div
@@ -32,6 +38,7 @@ function ChatBox() {
                   : "flex justify-start"
               }`}
               key={index}
+              ref={scrollRef}
             >
               <div
                 className={`p-2 text-white rounded-md max-w-[50%] ${

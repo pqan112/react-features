@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { path } from "../constants/path.constant";
 import { useAuth } from "../providers/auth.provider";
+import Notification from "./chat/Notification";
 
 function NavBar() {
   const { user, logout } = useAuth();
@@ -15,9 +16,16 @@ function NavBar() {
 
       <nav>
         {user && (
-          <Link onClick={logout} to={path.login}>
-            Logout
-          </Link>
+          <ul className="flex space-x-2">
+            <li>
+              <Notification />
+            </li>
+            <li>
+              <Link onClick={logout} to={path.login}>
+                Logout
+              </Link>
+            </li>
+          </ul>
         )}
 
         {!user && (

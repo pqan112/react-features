@@ -24,10 +24,13 @@ io.on("connection", (socket) => {
       (user) => user.userId === message.recipientId
     );
 
-    console.log("message", message);
-
     if (user) {
       io.to(user.socketId).emit("getMessage", message);
+      io.to(user.socketId).emit("getNotification", {
+        senderId: message.senderId,
+        isRead: false,
+        date: new Date(),
+      });
     }
   });
 
