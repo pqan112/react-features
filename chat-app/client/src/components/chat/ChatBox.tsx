@@ -22,16 +22,16 @@ function ChatBox() {
   return (
     <div>
       <div className="text-center">{recipientUser.name}</div>
-      <div className="space-y-2 h-[calc(100vh_-_42px_-_24px_-_24px_-_52px)]">
+      <div className="space-y-2 h-[calc(100vh_-_42px_-_24px_-_24px_-_52px)] overflow-y-auto">
         {messages &&
-          messages.map((message) => (
+          messages.map((message, index) => (
             <div
               className={`${
                 message.senderId === user?._id
                   ? "flex justify-end"
                   : "flex justify-start"
               }`}
-              key={message.createdAt}
+              key={index}
             >
               <div
                 className={`p-2 text-white rounded-md max-w-[50%] ${

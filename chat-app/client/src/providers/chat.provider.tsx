@@ -101,8 +101,29 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
 
     return () => {
       socket.off("getOnlineUsers");
+      socket.off("getMessage");
     };
   }, [socket, user?._id]);
+
+  // send Message
+  useEffect(() => {
+    if (socket === null) return;
+    const recipientId = currentChat?.members.find((id) => id !== user?._id);
+    socket.emit("sendMessage", { ...newMessage, recipientId });
+  }, [newMessage]);
+
+  // receive message
+  useEffect(() => {
+    if (socket === null) return;
+
+    socket.on("getMessage", (res: any) => {
+      console.log(res);
+      if (currentChat?._id !== res.chatId) return;
+      setMessages((prev) => [...prev, res]);
+    });
+  }, [newMessage]);
+
+  // todo
 
   useEffect(() => {
     const getUsers = async () => {
