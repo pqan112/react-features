@@ -1,11 +1,18 @@
 import React, { useState } from "react";
 import { useChat } from "../../providers/chat.provider";
 import { getUnreadNotifications } from "../../utils/unreadNotifications";
+import { useAuth } from "../../providers/auth.provider";
 
 function Notification() {
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, userChats, allUsers, markAllNotificationsAsRead } =
-    useChat();
+  const { user } = useAuth();
+  const {
+    notifications,
+    userChats,
+    allUsers,
+    markAllNotificationsAsRead,
+    markNotificationAsRead,
+  } = useChat();
 
   const unreadNotifications = getUnreadNotifications(notifications);
 
@@ -44,7 +51,13 @@ function Notification() {
           ) : null}
           {modifiedNotifications &&
             modifiedNotifications.map((n, index) => (
-              <div key={index}>
+              <div
+                key={index}
+                onClick={() => {
+                  markNotificationAsRead(n, userChats, user, notifications);
+                  setIsOpen(false);
+                }}
+              >
                 <span>{`${n.senderName} sent you a new message`}</span>
               </div>
             ))}

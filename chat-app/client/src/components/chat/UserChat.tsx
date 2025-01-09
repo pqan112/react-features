@@ -5,12 +5,17 @@ import {
   useChat,
   UserChat as UserChatType,
 } from "../../providers/chat.provider";
+import { getUnreadNotifications } from "../../utils/unreadNotifications";
 
 function UserChat({ chat }: { chat: UserChatType }) {
   const { user } = useAuth();
-  const { updateCurrentChat, onlineUsers } = useChat();
+  const { updateCurrentChat, onlineUsers, notifications } = useChat();
   const { recipientUser } = useFetchReceipient(chat, user);
 
+  const unreadNotifications = getUnreadNotifications(notifications);
+  const thisUserNotifications = unreadNotifications.filter(
+    (n) => n.senderId === recipientUser?._id
+  );
   const isOnline = onlineUsers.some((ou) => ou.userId === recipientUser?._id);
 
   return (
@@ -32,8 +37,16 @@ function UserChat({ chat }: { chat: UserChatType }) {
       </div>
       <div className="relative flex flex-col items-end gap-1">
         <div className="text-sm">12/12/2022</div>
-        <div className="h-5 text-sm text-center text-white bg-blue-600 rounded-full min-w-5">
-          2
+        <div
+          className={
+            thisUserNotifications.length > 0
+              ? "h-5 text-sm text-center text-white bg-blue-600 rounded-full min-w-5"
+              : ""
+          }
+        >
+          {thisUserNotifications.length > 0
+            ? thisUserNotifications.length
+            : null}
         </div>
         <span
           className={

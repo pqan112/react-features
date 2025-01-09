@@ -65,9 +65,15 @@ interface ChatContextProps {
   ) => void;
   setSendTextMessageError: (text: string) => void;
   setNewMessage: (message: Message) => void;
-  setNotifications: (notification: Array<Notification>) => void;
+  setNotifications: (notification: Notification[]) => void;
   setAllUsers: (users: User[]) => void;
   markAllNotificationsAsRead: (notifications: Notification[]) => void;
+  markNotificationAsRead: (
+    n: Notification & { senderName: string | undefined },
+    userChats: UserChat[],
+    user: any,
+    notifications: any
+  ) => void;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -90,7 +96,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   const [newMessage, setNewMessage] = useState<Message | null>(null);
   const [socket, setSocket] = useState<any>(null);
   const [onlineUsers, setOnlineUsers] = useState<any>([]);
-  const [notifications, setNotifications] = useState<Array<Notification>>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const { user } = useAuth();
 
@@ -207,7 +213,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     getMessages();
   }, [currentChat]);
 
-  const updateCurrentChat = useCallback((chat: any) => {
+  const updateCurrentChat = useCallback((chat: UserChat) => {
     setCurrentChat(chat);
   }, []);
 
@@ -262,6 +268,37 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     []
   );
 
+  const markNotificationAsRead = useCallback(
+    (
+      n: Notification & { senderName: string | undefined },
+      userChats: UserChat[],
+      user: UserType,
+      notifications: Notification[]
+    ) => {
+      const desiredChat = userChats.find((chat) => {
+        const chatMembers = [user?._id, n.senderId];
+        const isDesiredChat = chat?.members.every((member) => {
+          return chatMembers.includes(member);
+        });
+
+        return isDesiredChat;
+      });
+
+      //mark notification as read
+      const mNotifications = notifications.map((el) => {
+        if (n.senderId === el.senderId) {
+          return { ...n, isRead: true };
+        } else {
+          return el;
+        }
+      });
+
+      updateCurrentChat(desiredChat as UserChat);
+      setNotifications(mNotifications);
+    },
+    []
+  );
+
   return (
     <ChatContext.Provider
       value={{
@@ -293,6 +330,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         setNotifications,
         setAllUsers,
         markAllNotificationsAsRead,
+        markNotificationAsRead,
       }}
     >
       {children}
