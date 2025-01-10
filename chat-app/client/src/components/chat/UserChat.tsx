@@ -6,11 +6,20 @@ import {
   UserChat as UserChatType,
 } from "../../providers/chat.provider";
 import { getUnreadNotifications } from "../../utils/unreadNotifications";
+import useFetchMessage from "../../hooks/useFetchMessage";
+import moment from "moment";
 
 function UserChat({ chat }: { chat: UserChatType }) {
   const { user } = useAuth();
-  const { updateCurrentChat, onlineUsers, notifications } = useChat();
+  const {
+    updateCurrentChat,
+    onlineUsers,
+    notifications,
+    markThisUserNotificationsAsRead,
+  } = useChat();
   const { recipientUser } = useFetchReceipient(chat, user);
+
+  const { latestMessage } = useFetchMessage(chat);
 
   const unreadNotifications = getUnreadNotifications(notifications);
   const thisUserNotifications = unreadNotifications.filter(
@@ -18,10 +27,27 @@ function UserChat({ chat }: { chat: UserChatType }) {
   );
   const isOnline = onlineUsers.some((ou) => ou.userId === recipientUser?._id);
 
+  const truncateText = (text: string) => {
+    let shortText = text.substring(0, 20);
+
+    if (text.length > 20) {
+      shortText = shortText + "...";
+    }
+
+    return shortText;
+  };
+
   return (
     <div
       className="flex items-center justify-between p-3 cursor-pointer"
-      onClick={() => updateCurrentChat(chat)}
+      // onClick={() => updateCurrentChat(chat)}
+
+      onClick={() => {
+        updateCurrentChat(chat);
+        if (thisUserNotifications.length !== 0) {
+          markThisUserNotificationsAsRead(thisUserNotifications, notifications);
+        }
+      }}
     >
       <div className="flex items-center">
         <img
@@ -32,11 +58,17 @@ function UserChat({ chat }: { chat: UserChatType }) {
 
         <div className="flex flex-col">
           <span className="font-semibold">{recipientUser?.name}</span>
-          <span className="text-sm">Message</span>
+          <div className="text-sm">
+            {latestMessage?.text && (
+              <span>{truncateText(latestMessage.text)}</span>
+            )}
+          </div>
         </div>
       </div>
       <div className="relative flex flex-col items-end gap-1">
-        <div className="text-sm">12/12/2022</div>
+        <div className="text-sm">
+          {moment(latestMessage?.createdAt).format("DD/MM/YYYY")}
+        </div>
         <div
           className={
             thisUserNotifications.length > 0

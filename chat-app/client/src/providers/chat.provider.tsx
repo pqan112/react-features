@@ -74,6 +74,10 @@ interface ChatContextProps {
     user: any,
     notifications: any
   ) => void;
+  markThisUserNotificationsAsRead: (
+    thisUserNotifications: Notification[],
+    notifications: Notification[]
+  ) => void;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -194,7 +198,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     };
     getUserChats();
-  }, [user]);
+  }, [user, notifications]);
 
   useEffect(() => {
     const getMessages = async () => {
@@ -299,6 +303,27 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     []
   );
 
+  const markThisUserNotificationsAsRead = useCallback(
+    (thisUserNotifications: Notification[], notifications: Notification[]) => {
+      const mNotifications = notifications.map((el) => {
+        let notification;
+
+        thisUserNotifications.forEach((n) => {
+          if (n.senderId === el.senderId) {
+            notification = { ...n, isRead: true };
+          } else {
+            notification = el;
+          }
+        });
+
+        return notification;
+      });
+
+      setNotifications(mNotifications as any);
+    },
+    []
+  );
+
   return (
     <ChatContext.Provider
       value={{
@@ -331,6 +356,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         setAllUsers,
         markAllNotificationsAsRead,
         markNotificationAsRead,
+        markThisUserNotificationsAsRead,
       }}
     >
       {children}
