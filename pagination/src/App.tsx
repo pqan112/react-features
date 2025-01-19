@@ -110,7 +110,7 @@ function App() {
       ) : (
         <button
           className="px-3 py-2 mx-2 bg-white border rounded shadow-sm cursor-pointer"
-          onClick={() => setPage(1)}
+          onClick={() => setPage(page - 1)}
         >
           Prev
         </button>
@@ -122,7 +122,7 @@ function App() {
         </button>
       ) : (
         <button
-          onClick={() => setPage(pageSize)}
+          onClick={() => setPage(page + 1)}
           className="px-3 py-2 mx-2 bg-white border rounded shadow-sm cursor-pointer"
         >
           Next
