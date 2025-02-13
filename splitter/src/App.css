@@ -1,0 +1,26 @@
+.container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  background: #1b1b1b;
+}
+
+.left-panel,
+.right-panel {
+  height: 100%;
+}
+
+.left-panel {
+  width: 30%;
+  background: #302e2e;
+}
+
+.right-panel {
+  flex: 1;
+}
+
+.splitter {
+  background: red;
+  width: 5px;
+  cursor: ew-resize;
+}
