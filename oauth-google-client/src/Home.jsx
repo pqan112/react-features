@@ -30,6 +30,13 @@ function Home() {
   return (
     <div>
       <h1>Home page</h1>
+      <video controls width={500}>
+        <source
+          src="http://localhost:4000/static/video-stream/f47b29eacdb5218565efe8e00.mp4"
+          type="video/mp4"
+        ></source>
+      </video>
+
       {isAuthenticated ? (
         <>
           <p>Hello world, mother fucker</p>
